@@ -1,7 +1,6 @@
 buildscript {
     repositories {
         gradlePluginPortal()
-//        jcenter()
         google()
         mavenCentral()
     }
@@ -17,7 +16,6 @@ version = "1.0-SNAPSHOT"
 allprojects {
     repositories {
         google()
-//        jcenter()
         mavenCentral()
     }
 }
