@@ -2,15 +2,18 @@ package com.loneoaktech.tests.androidApp.ui.twilio
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import com.loneoaktech.tests.androidApp.BuildConfig
 import com.loneoaktech.utilities.extensions.summary
+import com.twilio.jwt.accesstoken.AccessToken
+import com.twilio.jwt.accesstoken.VideoGrant
 import com.twilio.video.*
 import timber.log.Timber
 
 class TwilioClientVM(application: Application) : AndroidViewModel(application) {
 
-    var accessToken: String = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImN0eSI6InR3aWxpby1mcGE7dj0xIn0.eyJqdGkiOiJTSzBiNDEwMGMyMDIyZDZlOWZmYzc0ODNhODJhNmY1ZTM0LTE2MjIyMjA4NzkiLCJpc3MiOiJTSzBiNDEwMGMyMDIyZDZlOWZmYzc0ODNhODJhNmY1ZTM0Iiwic3ViIjoiQUNhM2NkM2MxMjI3ZTYyMTQ2MDdiYWY1ZDU2ZDc0MGEwOCIsImV4cCI6MTYyMjIyNDQ3OSwiZ3JhbnRzIjp7ImlkZW50aXR5IjoiYmlsbGhAbG9uZW9ha3RlY2guY29tIiwidmlkZW8iOnsicm9vbSI6IkxPVC1UZXN0In19fQ.tTddrptQ-qke2G1zPDKNgUFmMX-1uz_VwtB-3jLLSdU"    // TODO get
+//    var accessToken: String = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImN0eSI6InR3aWxpby1mcGE7dj0xIn0.eyJqdGkiOiJTSzBiNDEwMGMyMDIyZDZlOWZmYzc0ODNhODJhNmY1ZTM0LTE2MjIyMjA4NzkiLCJpc3MiOiJTSzBiNDEwMGMyMDIyZDZlOWZmYzc0ODNhODJhNmY1ZTM0Iiwic3ViIjoiQUNhM2NkM2MxMjI3ZTYyMTQ2MDdiYWY1ZDU2ZDc0MGEwOCIsImV4cCI6MTYyMjIyNDQ3OSwiZ3JhbnRzIjp7ImlkZW50aXR5IjoiYmlsbGhAbG9uZW9ha3RlY2guY29tIiwidmlkZW8iOnsicm9vbSI6IkxPVC1UZXN0In19fQ.tTddrptQ-qke2G1zPDKNgUFmMX-1uz_VwtB-3jLLSdU"    // TODO get
 
-    fun connectToRoom( roomName: String): Room {
+    fun connectToRoom( roomName: String, accessToken: String): Room {
         val options = ConnectOptions.Builder(accessToken).apply {
             roomName(roomName)
         }.build()
@@ -18,6 +21,17 @@ class TwilioClientVM(application: Application) : AndroidViewModel(application) {
         return Video.connect( getApplication(), options, roomListener)
     }
 
+    fun createToken(): String {
+        return AccessToken.Builder(
+            BuildConfig.twilioAccountSid,
+            BuildConfig.twilioSID,
+            BuildConfig.twilioSecret
+        ).apply {
+            this.ttl(3600)
+            this.identity("billh@loneoaktech.com")
+            this.grant( VideoGrant().apply { room = "LOT-test" })
+        }.build().toJwt()
+    }
 
     private val roomListener = object: Room.Listener {
         override fun onConnected(room: Room) {

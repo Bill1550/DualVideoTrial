@@ -27,7 +27,7 @@ class TwilioClientFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         try {
-            room = model.connectToRoom("LOT-Test")
+            room = model.connectToRoom("LOT-Test", model.createToken())
         } catch (t: Throwable) {
             Timber.e(t, "Error when connecting to room: ${t.summary()}")
         }

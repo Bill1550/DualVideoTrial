@@ -26,6 +26,8 @@ dependencies {
     implementation("androidx.core:core-ktx:${Versions.AndroidX.core_ktx}")
     implementation("androidx.activity:activity-ktx:${Versions.AndroidX.activity_ktx}")
     implementation("androidx.fragment:fragment-ktx:${Versions.AndroidX.fragment_ktx}")
+
+    implementation("com.twilio.sdk:twilio:8.13.0")
 }
 
 android {
@@ -53,6 +55,18 @@ android {
 //        incremental = true
         sourceCompatibility = Options.javaVersion
         targetCompatibility = Options.javaVersion
+    }
+
+    packagingOptions {
+        exclude("META-INF/DEPENDENCIES")
+//        exclude("META-INF/LICENSE")
+//        exclude("META-INF/LICENSE.txt")
+//        exclude("META-INF/license.txt")
+//        exclude("META-INF/NOTICE")
+//        exclude("META-INF/NOTICE.txt")
+//        exclude("META-INF/notice.txt")
+//        exclude("META-INF/ASL2.0")
+//        exclude("META-INF/*.kotlin_module")
     }
 }
 
