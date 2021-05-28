@@ -23,7 +23,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:${Versions.AndroidX.lifecycle}")
     implementation("androidx.core:core-ktx:${Versions.AndroidX.core_ktx}")
     implementation("androidx.activity:activity-ktx:${Versions.AndroidX.activity_ktx}")
-    implementation("androidx.fragment:fragment:${Versions.AndroidX.fragment_ktx}")
+    implementation("androidx.fragment:fragment-ktx:${Versions.AndroidX.fragment_ktx}")
 }
 
 android {
