@@ -7,6 +7,7 @@ import android.widget.TextView
 import com.loneoaktech.apps.androidApp.databinding.ActivityMainBinding
 import com.loneoaktech.utilities.ui.lazyViewBinding
 import com.loneoaktech.utilities.ui.withViews
+import timber.log.Timber
 
 fun greet(): String {
     return Greeting().greeting()
@@ -24,7 +25,5 @@ class MainActivity : AppCompatActivity() {
             textView.text = greet()
         }
 
-//        val tv: TextView = findViewById(R.id.text_view)
-//        tv.text = greet()
     }
 }

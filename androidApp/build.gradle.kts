@@ -1,3 +1,7 @@
+import org.jetbrains.kotlin.konan.properties.Properties
+import java.io.FileInputStream
+import com.android.build.gradle.internal.dsl.DefaultConfig
+
 plugins {
     id("com.android.application")
     kotlin("android")
@@ -22,6 +26,9 @@ android {
         targetSdkVersion(30)
         versionCode = 1
         versionName = "1.0"
+
+        val keysProps = readProperties("keys.properties")
+        buildConfigStringFields(keysProps)
     }
     buildFeatures {
         viewBinding = true
@@ -31,4 +38,21 @@ android {
             isMinifyEnabled = false
         }
     }
+}
+
+fun readProperties(fileName: String): Map<String,String> {
+    val props = Properties()
+    val propsFile = rootProject.file(fileName)
+    props.load(FileInputStream(propsFile))
+    return props.map { entry -> entry.key.toString() to entry.value.toString() }.associate { it }
+}
+
+fun Map<String,String>.getFieldValue( name: String): String =
+    "\"${this[name]?: ""}\""
+
+fun DefaultConfig.buildConfigStringFields( map: Map<String,String>) {
+    map.forEach { (key, value) ->
+        buildConfigField("String", key, "\"$value\"")
+    }
+
 }
