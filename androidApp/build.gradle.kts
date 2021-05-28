@@ -14,7 +14,10 @@ version = "1.0-SNAPSHOT"
 
 dependencies {
     implementation(project(":shared"))
-    implementation("com.google.android.material:material:1.3.0")
+    implementation(project(":zoomclient"))
+    implementation(project(":zoomcommonlib"))
+
+    implementation("com.google.android.material:material:${Versions.Google.android_material}")
     implementation("androidx.appcompat:appcompat:${Versions.AndroidX.appcompat}")
     implementation("androidx.constraintlayout:constraintlayout:${Versions.AndroidX.constraint_layout}")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:${Versions.AndroidX.lifecycle}")

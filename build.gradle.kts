@@ -17,5 +17,6 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        jcenter() // TODO remove (deprecated) needed for google Flexbox used by zoom commonlib
     }
 }
