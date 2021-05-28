@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Dual Video Trial</string>
+    <string name="title_zoom_client">Zoom Client</string>
+    <string name="title_twilio_client">Twilio Client</string>
 </resources>
