@@ -17,6 +17,8 @@ dependencies {
     implementation(project(":zoomclient"))
     implementation(project(":zoomcommonlib"))
 
+    implementation("com.twilio:video-android:6.0.0")
+
     implementation("com.google.android.material:material:${Versions.Google.android_material}")
     implementation("androidx.appcompat:appcompat:${Versions.AndroidX.appcompat}")
     implementation("androidx.constraintlayout:constraintlayout:${Versions.AndroidX.constraint_layout}")
@@ -45,6 +47,12 @@ android {
         getByName("release") {
             isMinifyEnabled = false
         }
+    }
+
+    compileOptions {
+//        incremental = true
+        sourceCompatibility = Options.javaVersion
+        targetCompatibility = Options.javaVersion
     }
 }
 

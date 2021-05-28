@@ -5,7 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.loneoaktech.tests.shared.Greeting
 import com.loneoaktech.tests.androidApp.databinding.ActivityMeetingBinding
-import com.loneoaktech.tests.androidApp.ui.TwilioClientFragment
+import com.loneoaktech.tests.androidApp.ui.twilio.TwilioClientFragment
 import com.loneoaktech.tests.androidApp.ui.zoomclient.ZoomClientFragment
 import com.loneoaktech.utilities.ui.lazyViewBinding
 
