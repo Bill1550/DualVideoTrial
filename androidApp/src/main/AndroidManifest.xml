@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.loneoaktech.apps.androidApp">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.loneoaktech.tests.androidApp">
     <application
-            android:name=".DualVideoApplication"
+            android:name="com.loneoaktech.tests.androidApp.DualVideoApplication"
             android:allowBackup="false"
             android:supportsRtl="true"
             android:label="@string/app_name"
             android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name="com.loneoaktech.tests.androidApp.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

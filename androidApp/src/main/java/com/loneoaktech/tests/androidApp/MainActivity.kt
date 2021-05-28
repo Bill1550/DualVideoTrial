@@ -1,13 +1,13 @@
-package com.loneoaktech.apps.androidApp
+package com.loneoaktech.tests.androidApp
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.loneoaktech.apps.shared.Greeting
-import android.widget.TextView
-import com.loneoaktech.apps.androidApp.databinding.ActivityMainBinding
+import androidx.lifecycle.lifecycleScope
+import com.loneoaktech.tests.shared.Greeting
+import com.loneoaktech.tests.androidApp.databinding.ActivityMainBinding
 import com.loneoaktech.utilities.ui.lazyViewBinding
 import com.loneoaktech.utilities.ui.withViews
-import timber.log.Timber
+import kotlinx.coroutines.delay
 
 fun greet(): String {
     return Greeting().greeting()
@@ -23,7 +23,13 @@ class MainActivity : AppCompatActivity() {
 
         holder.withViews {
             textView.text = greet()
+
+            lifecycleScope.launchWhenResumed {
+                delay(4000)
+                textView.text = "Now to work!"
+            }
         }
+
 
     }
 }

@@ -1,4 +1,4 @@
-package com.loneoaktech.apps.shared
+package com.loneoaktech.tests.shared
 
 
 class Greeting {

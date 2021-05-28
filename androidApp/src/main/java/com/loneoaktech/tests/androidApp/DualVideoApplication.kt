@@ -1,4 +1,4 @@
-package com.loneoaktech.apps.androidApp
+package com.loneoaktech.tests.androidApp
 
 import android.app.Application
 import timber.log.Timber

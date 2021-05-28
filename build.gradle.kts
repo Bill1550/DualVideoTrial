@@ -10,7 +10,7 @@ buildscript {
     }
 }
 
-group = "com.loneoaktech.apps"
+group = "com.loneoaktech.tests"
 version = "1.0-SNAPSHOT"
 
 allprojects {
