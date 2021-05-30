@@ -18,4 +18,18 @@
             android:text="@string/title_twilio_client"
             />
 
+    <com.twilio.video.VideoView
+            android:id="@+id/localVideoView"
+            android:layout_width="0dp"
+            app:layout_constraintWidth_percent=".35"
+            android:layout_height="0dp"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias=".9"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintVertical_bias=".05"
+            />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

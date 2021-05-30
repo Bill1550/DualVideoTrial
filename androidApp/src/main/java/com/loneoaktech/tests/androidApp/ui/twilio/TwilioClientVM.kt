@@ -1,6 +1,7 @@
 package com.loneoaktech.tests.androidApp.ui.twilio
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import com.loneoaktech.tests.androidApp.BuildConfig
 import com.loneoaktech.utilities.extensions.summary
@@ -8,6 +9,7 @@ import com.twilio.jwt.accesstoken.AccessToken
 import com.twilio.jwt.accesstoken.VideoGrant
 import com.twilio.video.*
 import timber.log.Timber
+import tvi.webrtc.Camera2Enumerator
 
 class TwilioClientVM(application: Application) : AndroidViewModel(application) {
 
@@ -31,6 +33,14 @@ class TwilioClientVM(application: Application) : AndroidViewModel(application) {
             this.identity("billh@loneoaktech.com")
             this.grant( VideoGrant().apply { room = "LOT-test" })
         }.build().toJwt()
+    }
+
+
+
+    private fun findFrontCameraId(context: Context): String? {
+        return Camera2Enumerator(context).run {
+            deviceNames.firstOrNull { isFrontFacing(it) }
+        }
     }
 
     private val roomListener = object: Room.Listener {
