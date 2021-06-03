@@ -29,6 +29,6 @@ enum class Permissions(
      */
     @StringRes override val settingsAdviceText: Int
 ) : PermissionSpec {
-    CAMERA(Manifest.permission.CAMERA, R.string.permission_explanation_ble, R.string.permission_rationale_camera, R.string.permission_advice_camera),
+    CAMERA(Manifest.permission.CAMERA, null, R.string.permission_rationale_camera, R.string.permission_advice_camera),
     BLE(Manifest.permission.ACCESS_FINE_LOCATION, R.string.permission_explanation_ble, R.string.permission_rationale_ble, R.string.permission_advice_ble)
 }
