@@ -38,6 +38,6 @@ class MainActivity : AppCompatActivity() {
             }.commit()
         }
 
-
+        this.activityResultRegistry
     }
 }

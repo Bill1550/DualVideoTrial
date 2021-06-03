@@ -25,7 +25,14 @@ kotlin {
         }
         val androidMain by getting {
             dependencies {
-                implementation("com.google.android.material:material:${Versions.Google.android_material}")
+                api("com.google.android.material:material:${Versions.Google.android_material}")
+                api("androidx.appcompat:appcompat:${Versions.AndroidX.appcompat}")
+                api("androidx.lifecycle:lifecycle-viewmodel-ktx:${Versions.AndroidX.lifecycle}")
+                api("androidx.lifecycle:lifecycle-runtime-ktx:${Versions.AndroidX.lifecycle}")
+                api("androidx.lifecycle:lifecycle-common-java8:${Versions.AndroidX.lifecycle}")
+                api("androidx.core:core-ktx:${Versions.AndroidX.core_ktx}")
+                api("androidx.activity:activity-ktx:${Versions.AndroidX.activity_ktx}")
+                api("androidx.fragment:fragment-ktx:${Versions.AndroidX.fragment_ktx}")
                 api("com.jakewharton.timber:timber:${Versions.JakeWharton.timber}")
 
             }

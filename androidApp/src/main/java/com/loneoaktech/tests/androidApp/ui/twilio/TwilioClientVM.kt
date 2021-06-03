@@ -8,12 +8,48 @@ import com.loneoaktech.utilities.extensions.summary
 import com.twilio.jwt.accesstoken.AccessToken
 import com.twilio.jwt.accesstoken.VideoGrant
 import com.twilio.video.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import timber.log.Timber
 import tvi.webrtc.Camera2Enumerator
 
 class TwilioClientVM(application: Application) : AndroidViewModel(application) {
 
 //    var accessToken: String = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImN0eSI6InR3aWxpby1mcGE7dj0xIn0.eyJqdGkiOiJTSzBiNDEwMGMyMDIyZDZlOWZmYzc0ODNhODJhNmY1ZTM0LTE2MjIyMjA4NzkiLCJpc3MiOiJTSzBiNDEwMGMyMDIyZDZlOWZmYzc0ODNhODJhNmY1ZTM0Iiwic3ViIjoiQUNhM2NkM2MxMjI3ZTYyMTQ2MDdiYWY1ZDU2ZDc0MGEwOCIsImV4cCI6MTYyMjIyNDQ3OSwiZ3JhbnRzIjp7ImlkZW50aXR5IjoiYmlsbGhAbG9uZW9ha3RlY2guY29tIiwidmlkZW8iOnsicm9vbSI6IkxPVC1UZXN0In19fQ.tTddrptQ-qke2G1zPDKNgUFmMX-1uz_VwtB-3jLLSdU"    // TODO get
+
+    private val _localVideoTrack = MutableStateFlow<VideoTrack?>(null)
+
+    val localVideoTrack: StateFlow<VideoTrack?>
+        get() = _localVideoTrack
+
+
+    fun init() {
+        startLocalVideo()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        stopLocalVideo()
+    }
+
+    private fun startLocalVideo() {
+        if (_localVideoTrack.value == null) {  // TODO protect w/ mutex?
+            findFrontCameraId(getApplication())?.let {cameraId ->
+                val cc = Camera2Capturer(getApplication(), cameraId)
+
+                val localTrack = LocalVideoTrack.create(getApplication(),true, cc, "Me")
+                _localVideoTrack.tryEmit(localTrack)
+            }
+        }
+    }
+
+    private fun stopLocalVideo() {
+        _localVideoTrack.value?.let { localTrack ->
+            _localVideoTrack.tryEmit(null)
+            localTrack.sinks.forEach { localTrack.removeSink(it) }
+            (localTrack as?LocalVideoTrack)?.release()
+        }
+    }
 
     fun connectToRoom( roomName: String, accessToken: String): Room {
         val options = ConnectOptions.Builder(accessToken).apply {
@@ -23,6 +59,9 @@ class TwilioClientVM(application: Application) : AndroidViewModel(application) {
         return Video.connect( getApplication(), options, roomListener)
     }
 
+    /**
+     * Temp token creator.  Should come from server
+     */
     fun createToken(): String {
         return AccessToken.Builder(
             BuildConfig.twilioAccountSid,

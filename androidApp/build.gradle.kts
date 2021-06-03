@@ -19,13 +19,13 @@ dependencies {
 
     implementation("com.twilio:video-android:6.0.0")
 
-    implementation("com.google.android.material:material:${Versions.Google.android_material}")
-    implementation("androidx.appcompat:appcompat:${Versions.AndroidX.appcompat}")
     implementation("androidx.constraintlayout:constraintlayout:${Versions.AndroidX.constraint_layout}")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:${Versions.AndroidX.lifecycle}")
-    implementation("androidx.core:core-ktx:${Versions.AndroidX.core_ktx}")
-    implementation("androidx.activity:activity-ktx:${Versions.AndroidX.activity_ktx}")
-    implementation("androidx.fragment:fragment-ktx:${Versions.AndroidX.fragment_ktx}")
+//    implementation("com.google.android.material:material:${Versions.Google.android_material}")
+//    implementation("androidx.appcompat:appcompat:${Versions.AndroidX.appcompat}")
+//    implementation("androidx.lifecycle:lifecycle-runtime-ktx:${Versions.AndroidX.lifecycle}")
+//    implementation("androidx.core:core-ktx:${Versions.AndroidX.core_ktx}")
+//    implementation("androidx.activity:activity-ktx:${Versions.AndroidX.activity_ktx}")
+//    implementation("androidx.fragment:fragment-ktx:${Versions.AndroidX.fragment_ktx}")
 
     implementation("com.twilio.sdk:twilio:8.13.0")
 }
