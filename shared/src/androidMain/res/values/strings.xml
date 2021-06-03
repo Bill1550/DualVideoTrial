@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="permission_is_required">Permission is required for app to run.</string>
+    <string name="button_label_ok">OK</string>
+    <string name="enable_permission_in_settings">Please enable permission in setting, which will open next.</string>
+    <string name="permission_rationale_camera">Permission to access the camera is required for this app to run.</string>
+    <string name="permission_advice_camera">Please enable the camera permission under the Permissions heading in the next screen.</string>
+    <string name="permission_explanation_ble">Android requires the this app have Location permission to communicate over Bluetooth Low Energy.</string>
+    <string name="permission_rationale_ble">Location permission is required so that this app can communicate to Bluetooth Low Energy Devices.</string>
+    <string name="permission_advice_ble">Please enable location permission under the Permissions heading in the next screen.</string>
+</resources>

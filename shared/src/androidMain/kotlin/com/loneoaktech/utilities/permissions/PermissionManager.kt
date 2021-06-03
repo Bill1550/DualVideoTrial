@@ -1,8 +1,13 @@
 package com.loneoaktech.utilities.permissions
 
+import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.provider.Settings
 import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.edit
@@ -10,6 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
+import com.loneoaktech.tests.shared.R
 import kotlinx.coroutines.*
 import timber.log.Timber
 import kotlin.coroutines.resume
@@ -21,12 +27,24 @@ import kotlin.coroutines.suspendCoroutine
  *
  * **Experimental**
  * Compact way to handle permission request
+ *
+ * Usage:
+ *  In fragment:
+ *
+ *  val permissionManager = createPermissionManager( listOf(permissions), appCoroutineScope )
  */
 class PermissionManager(
-    val permissions: List<String>,
+    /**
+     * Permissions to be requested by this manager.
+     */
+    val permissions: List<PermissionSpec>,
+
+    /**
+     * Lifecycle of the UI component which will make the request (Activity or Fragment)
+     */
     private val lifecycle: Lifecycle,
     private val requestScope: CoroutineScope,
-    private val activityProvider: ()->ComponentActivity
+    private val activityProvider: () -> ComponentActivity
 ) {
     companion object {
         private const val KEY_WAS_DENIED = "was-denied"
@@ -40,23 +58,49 @@ class PermissionManager(
         get() = activityProvider()
 
     private lateinit var requestLauncher: ActivityResultLauncher<Array<String>>
+    private lateinit var settingsLauncher: ActivityResultLauncher<Intent>
 
-    private var resultHandler: ((Map<String,Boolean>)->Unit)? = null
+    private var permissionResultHandler: ((Map<String, Boolean>) -> Unit)? = null
+    private var settingsResultHandler: ((ActivityResult) -> Unit)? = null
 
-    private val observer = object: DefaultLifecycleObserver {
+    private val observer = object : DefaultLifecycleObserver {
         override fun onCreate(owner: LifecycleOwner) {
+            Timber.i("Observer: onCreate")
             requestLauncher = activity.activityResultRegistry.register(
                 "request",
                 owner,
-                ActivityResultContracts.RequestMultiplePermissions()){ result ->
-                    resultHandler?.invoke(result)
+                ActivityResultContracts.RequestMultiplePermissions()
+            ) { result ->
+                permissionResultHandler?.invoke(result)
             }
+
+            settingsLauncher = activity.activityResultRegistry.register(
+                "settings",
+                owner,
+                ActivityResultContracts.StartActivityForResult()
+            ) { result ->
+                settingsResultHandler?.invoke(result)
+            }
+
         }
+
+        override fun onDestroy(owner: LifecycleOwner) {
+            super.onDestroy(owner)
+            Timber.i("Observer: onDestroy")
+            lifecycle.removeObserver(this)
+        }
+    }
+
+    init {
+        lifecycle.addObserver(observer)
     }
 
     val isGranted: Boolean
         get() {
-            return permissions.all {  activity.checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED }
+            return permissions.isEmpty() ||
+                    permissions.map { it.key }.all { key ->
+                        activity.checkSelfPermission(key) == PackageManager.PERMISSION_GRANTED
+                    }
         }
 
     /**
@@ -65,42 +109,57 @@ class PermissionManager(
      * However, should work correctly when the resurrected activity enters the same flow.
      */
     suspend fun checkAndRequestPermission(): Boolean {
-
-        if (isGranted)
+        Timber.i("checkAndRequestPermission, isGranted=$isGranted")
+        if (isGranted) {
+            persistDenial(false)
             return true
+        }
 
         return CoroutineScope(requestScope.coroutineContext + SupervisorJob()).async {
             try {
                 runStateMachine()
-            } catch (ce: CancellationException){
+            } catch (ce: CancellationException) {
                 Timber.e("request state machine cancelled")
                 throw ce
             }
         }.await()
     }
 
+    /**
+     * The heart of the request process. Mediates the correct display to the user.
+     */
     private suspend fun runStateMachine(): Boolean {
-        while( !isGranted ) {
-            when( determineRequestState() ) {
+        while (!isGranted) {
+            when (determineRequestState().apply { Timber.i("run state machine, state=$this") }) {
                 RequestState.GRANTED -> return true
-                RequestState.FRESH ->  requestPermission()
-                RequestState.DENIED_ONCE -> requestPermission() // TODO show explaination
-                RequestState.DENIED_MULTIPLE -> openSettings()
+                RequestState.FRESH -> {
+                    showPermissionExplanation(permissions.first())
+                    requestPermission()
+                }
+                RequestState.DENIED_ONCE -> {
+                    showMustHaveDialog(permissions.first()) // TODO deal with partial approval of a list of permissions
+                    requestPermission()
+                }
+                RequestState.DENIED_MULTIPLE -> {
+                    showSettingsWarning(permissions.first())  // TODO same as above
+                    openAppSettings()
+                }
             }
         }
 
         return true
     }
 
-    private suspend fun openSettings() {
-        delay(500) // TODO
-    }
-
     private suspend fun requestPermission(): Boolean {
-        return suspendCoroutine<Map<String,Boolean>> { continuation ->
-            resultHandler = { continuation.resume(it) }
-            requestLauncher.launch( permissions.toTypedArray() )
-        }.values.all { it }
+        return suspendCoroutine<Map<String, Boolean>> { continuation ->
+            permissionResultHandler = {
+                permissionResultHandler = null
+                continuation.resume(it)
+            }
+            requestLauncher.launch(permissions.map { it.key }.toTypedArray())
+        }.values.all { it }.also { granted ->
+            persistDenial(!granted)
+        }
     }
 
     /**
@@ -109,7 +168,7 @@ class PermissionManager(
      */
     private suspend fun determineRequestState(): RequestState {
         return when {
-            isGranted  -> RequestState.GRANTED
+            isGranted -> RequestState.GRANTED
             shouldShowRationale() -> RequestState.DENIED_ONCE // only true after the first denial
             wasPreviouslyDenied() -> RequestState.DENIED_MULTIPLE
             else -> RequestState.FRESH
@@ -119,15 +178,15 @@ class PermissionManager(
     }
 
     private fun shouldShowRationale(): Boolean {
-        return permissions.any { activity.shouldShowRequestPermissionRationale(it) }
+        return permissions.any { activity.shouldShowRequestPermissionRationale(it.key) }
     }
 
-    private val prefsName by lazy { javaClass.name +  ":" + permissions.joinToString("-")}
+    private val prefsName by lazy { javaClass.name + ":" + permissions.joinToString("-") }
 
-    private suspend fun persistDenial( denied: Boolean ) {
-        withContext(diskIoDispatcher){
-            activity.getSharedPreferences(prefsName, Context.MODE_PRIVATE )?.edit {
-                if ( denied )
+    private suspend fun persistDenial(denied: Boolean) {
+        withContext(diskIoDispatcher) {
+            activity.getSharedPreferences(prefsName, Context.MODE_PRIVATE)?.edit {
+                if (denied)
                     putBoolean(KEY_WAS_DENIED, true)
                 else
                     remove(KEY_WAS_DENIED)
@@ -141,7 +200,54 @@ class PermissionManager(
         }
     }
 
+    private suspend fun showPermissionExplanation(permission: PermissionSpec) {
+        permission.permissionExplanation?.let { sid ->
+            showWarningDialog(sid)
+        }
+    }
+
+    private suspend fun showMustHaveDialog(permission: PermissionSpec) {
+        showWarningDialog(permission.rationaleText)
+    }
+
+    private suspend fun showSettingsWarning(permission: PermissionSpec) {
+        showWarningDialog(permission.settingsAdviceText)
+    }
+
+    private suspend fun showWarningDialog(titleSid: Int) {
+        suspendCoroutine<Unit> { continuation ->
+
+            AlertDialog.Builder(activity)
+                .setCancelable(false)
+                .setMessage(titleSid)
+                .setPositiveButton(R.string.button_label_ok) { dialog, _ ->
+                    dialog.dismiss()
+                    continuation.resume(Unit)
+                }
+                .show()
+        }
+    }
+
+    private suspend fun openAppSettings() {
+        suspendCoroutine<ActivityResult> { continuation ->
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", activity.packageName, null)
+            }
+
+            settingsResultHandler = { result ->
+                settingsResultHandler = null
+                continuation.resume(result)
+            }
+
+            settingsLauncher.launch(intent)
+        }
+    }
+
 }
 
-fun Fragment.createPermissionManager(permissions: List<String>, scope: CoroutineScope): PermissionManager =
-    PermissionManager( permissions, lifecycle, scope ) { requireActivity() }
+/**
+ * Creates a permission manager. Must be created in Fragments constructor (init period) so it exists before
+ * onCreate runs.
+ */
+fun Fragment.createPermissionManager(permissions: List<PermissionSpec>, scope: CoroutineScope): PermissionManager =
+    PermissionManager(permissions, lifecycle, scope) { requireActivity() }

@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import com.loneoaktech.tests.androidApp.databinding.FragmentTwilioClientBinding
 import com.loneoaktech.tests.androidApp.ui.BaseFragment
 import com.loneoaktech.utilities.extensions.summary
+import com.loneoaktech.utilities.permissions.Permissions
 import com.loneoaktech.utilities.permissions.createPermissionManager
 import com.loneoaktech.utilities.ui.lazyViewBinding
 import com.twilio.video.Room
@@ -24,7 +25,7 @@ class TwilioClientFragment : BaseFragment() {
     private val holder = lazyViewBinding { FragmentTwilioClientBinding.inflate(layoutInflater) }
     private val model: TwilioClientVM by viewModels()
 
-    private val permissionManager = createPermissionManager(listOf(Manifest.permission.CAMERA), lifecycleScope)
+    private val permissionManager = createPermissionManager(listOf(Permissions.CAMERA), lifecycleScope)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return holder.root
@@ -42,15 +43,19 @@ class TwilioClientFragment : BaseFragment() {
         }
 
         createVideoJob()
-        model.init()
+
+        lifecycleScope.launchWhenCreated {
+            if(permissionManager.checkAndRequestPermission())
+                model.init()
+        }
     }
 
     private fun createVideoJob() {
 
         viewLifecycleOwner.addRepeatingJob(Lifecycle.State.RESUMED){
             try {
-                if (!permissionManager.checkAndRequestPermission())
-                    return@addRepeatingJob
+//                if (!permissionManager.checkAndRequestPermission())
+//                    return@addRepeatingJob
 
                 model.localVideoTrack.collect { localTrack ->
                     localTrack?.addSink( holder.binding.localVideoView )
