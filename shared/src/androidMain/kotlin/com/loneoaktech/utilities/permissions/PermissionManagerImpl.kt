@@ -32,8 +32,21 @@ import kotlin.coroutines.suspendCoroutine
  *  In fragment:
  *
  *  val permissionManager = createPermissionManager( listOf(permissions), appCoroutineScope )
+ *
+ *  Design:
+ *      Uses the Activity Result Registry (recently added to AndroidX) to handler the OS permissiong
+ *      request and activity launch process, eliminating the need for multiple overrides in the app.
+ *
+ *      Runs a state machine to handle the full permission request options, including if the the user
+ *      denies permissions multiple times.
+ *
+ *      Runs as a single suspend fun, that should be launched in the scope of the UI component.
+ *      *** This is experimental, since in edge cases the calling activity can be destroyed during
+ *      the permission request.  It should recover when the restarted app re-verifies permission. ***
+ *
  */
 class PermissionManagerImpl internal constructor(
+
     /**
      * Permissions to be requested by this manager.
      */
@@ -43,7 +56,17 @@ class PermissionManagerImpl internal constructor(
      * Lifecycle of the UI component which will make the request (Activity or Fragment)
      */
     private val lifecycle: Lifecycle,
+
+    /**
+     * The application scope. Should be a long lived supervisor job that is used to run the specific request.
+     * Should not be the UI component scope, as this can cancel when the UI component goes into the background.
+     * Normally injected.
+     */
     private val requestScope: CoroutineScope,
+
+    /**
+     * A lambda to get the activity, runs as a lambda since the activity isn't know at Fragment construction time.
+     */
     private val activityProvider: () -> ComponentActivity
 ) : PermissionManager {
     companion object {
@@ -248,11 +271,41 @@ class PermissionManagerImpl internal constructor(
 }
 
 /**
- * Creates a permission manager. Must be created in Fragments constructor (init period) so it exists before
+ * Creates a permission manager. Must be created in Fragment's constructor (init period) so it exists before
  * onCreate runs.
  */
-fun Fragment.createPermissionManager(permissions: List<PermissionSpec>, scope: CoroutineScope): PermissionManager =
+fun Fragment.createPermissionManager(
+    /**
+     * Permissions to be requested by this manager.
+     * Can be a list of Permissions enum values, or custom objects implementing the PermissionSpec interface.
+     * Specifies the permission and the UI text strings.
+     */
+    permissions: List<PermissionSpec>,
+
+    /**
+     * The application scope. Should be a long lived supervisor job that is used to run the specific request.
+     * Should not be the UI component scope, as this can cancel when the UI component goes into the background.
+     * Normally injected.
+     */
+    scope: CoroutineScope
+): PermissionManager =
     PermissionManagerImpl(permissions, lifecycle, scope) { requireActivity() }
 
-fun ComponentActivity.createPermissionManager(permissions: List<PermissionSpec>, scope: CoroutineScope): PermissionManager =
+/**
+ * Creates a permission manager. Must be created in the Activity's constructor (init period) so it exists before
+ * onCreate runs.
+ */
+fun ComponentActivity.createPermissionManager(
+    /**
+     * Permissions to be requested by this manager.
+     * Can be a list of Permissions enum values, or custom objects implementing the PermissionSpec interface.
+     * Specifies the permission and the UI text strings.
+     */
+    permissions: List<PermissionSpec>,
+
+    /**
+     * Permissions to be requested by this manager.
+     */
+    scope: CoroutineScope)
+: PermissionManager =
     PermissionManagerImpl(permissions, lifecycle, scope ) { this }
