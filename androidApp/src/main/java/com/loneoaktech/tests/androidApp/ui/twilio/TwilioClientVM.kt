@@ -88,7 +88,7 @@ class TwilioClientVM(application: Application) : AndroidViewModel(application) {
         }
 
         override fun onConnectFailure(room: Room, twilioException: TwilioException) {
-            Timber.i("Room Listener: onConnectFailure: room=$room error=${twilioException.summary()}")
+            Timber.e("Room Listener: onConnectFailure: room=$room error=${twilioException.summary()}")
         }
 
         override fun onReconnecting(room: Room, twilioException: TwilioException) {

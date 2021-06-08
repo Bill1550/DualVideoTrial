@@ -4,9 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import com.loneoaktech.tests.androidApp.BuildConfig
 import timber.log.Timber
-import us.zoom.sdk.ZoomSDK
-import us.zoom.sdk.ZoomSDKInitParams
-import us.zoom.sdk.ZoomSDKInitializeListener
+import us.zoom.sdk.*
 
 class ZoomClientVM(application: Application) : AndroidViewModel(application) {
 
@@ -27,6 +25,31 @@ class ZoomClientVM(application: Application) : AndroidViewModel(application) {
         val listener = object: ZoomSDKInitializeListener {
             override fun onZoomSDKInitializeResult(errorCode: Int, internalErrorCode: Int) {
                 Timber.i("Zoom Client SDK initialize result: errorCode=$errorCode internalCode=$internalErrorCode")
+
+                if ( errorCode != ZoomError.ZOOM_ERROR_SUCCESS) {
+                    Timber.e("SDK Initialization failure: errorCode=$errorCode, internalCode=$internalErrorCode")
+                } else {
+                    if ( login() ) {
+
+                        // logged in, try to create a meeting
+                        sdk.meetingService?.let { ms ->
+                            ms.addListener { status, errorCode, internalErrorCode ->
+                                Timber.i("Meeting status change: status=$status, errorCode=$errorCode, internalCode=$internalErrorCode")
+                            }
+
+                            val opts = InstantMeetingOptions().apply {
+
+                            }
+
+                            Timber.i("Starting meeting...")
+                            ms.startInstantMeeting( getApplication(), opts ).also { error ->
+                                Timber.i("startInstantMeeting returned $error")
+                            }
+
+                        }?: Timber.e("Meeting service not available")
+
+                    }
+                }
             }
 
             override fun onZoomAuthIdentityExpired() {
@@ -36,5 +59,18 @@ class ZoomClientVM(application: Application) : AndroidViewModel(application) {
 
         Timber.i("initializing zoom client sdk...")
         sdk.initialize(getApplication(), listener, params)
+    }
+
+    private fun login(): Boolean {
+        val sdk = ZoomSDK.getInstance()
+
+        return if (sdk.tryAutoLoginZoom() == ZoomApiError.ZOOM_API_ERROR_SUCCESS) {
+            Timber.i("Auto login successful")
+            true
+        } else {
+            sdk.loginWithZoom("hartwg@gmail.com", "n2875c01").also {
+                Timber.i("Email login result=$it Ok=${it == ZoomApiError.ZOOM_API_ERROR_SUCCESS}")
+            } == ZoomApiError.ZOOM_API_ERROR_SUCCESS
+        }
     }
 }
