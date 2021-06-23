@@ -34,7 +34,7 @@ import kotlin.coroutines.suspendCoroutine
  *  val permissionManager = createPermissionManager( listOf(permissions), appCoroutineScope )
  *
  *  Design:
- *      Uses the Activity Result Registry (recently added to AndroidX) to handler the OS permissiong
+ *      Uses the Activity Result Registry (recently added to AndroidX) to handle the OS permission
  *      request and activity launch process, eliminating the need for multiple overrides in the app.
  *
  *      Runs a state machine to handle the full permission request options, including if the the user
@@ -119,7 +119,7 @@ class PermissionManagerImpl internal constructor(
     }
 
     /**
-     * Provides a non-suspending check to see if permission is already granged.
+     * Provides a non-suspending check to see if permission is already granted.
      */
     override val isGranted: Boolean
         get() {

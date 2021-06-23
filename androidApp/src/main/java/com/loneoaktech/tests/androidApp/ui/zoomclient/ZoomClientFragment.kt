@@ -24,4 +24,6 @@ class ZoomClientFragment : BaseFragment() {
 
         model.init()
     }
+
+    
 }

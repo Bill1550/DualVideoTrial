@@ -30,6 +30,7 @@ object Versions {
 
     object Google {
         const val android_material = "1.3.0"
+        const val flexbox = "3.0.0"
     }
 
 

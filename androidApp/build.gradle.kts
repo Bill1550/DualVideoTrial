@@ -17,7 +17,7 @@ dependencies {
     implementation(project(":zoomclient"))
     implementation(project(":zoomcommonlib"))
 
-    implementation("com.twilio:video-android:6.0.0")
+    implementation("com.twilio:video-android:6.3.0")
 
     implementation("androidx.constraintlayout:constraintlayout:${Versions.AndroidX.constraint_layout}")
 //    implementation("com.google.android.material:material:${Versions.Google.android_material}")

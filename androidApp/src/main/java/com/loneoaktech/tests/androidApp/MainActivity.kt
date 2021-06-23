@@ -22,15 +22,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(holder.root)
 
-//        holder.withViews {
-//            textView.text = greet()
-//
-//            lifecycleScope.launchWhenResumed {
-//                delay(4000)
-//                textView.text = "Now to work!"
-//            }
-//        }
-
         if ( savedInstanceState == null ) {
             supportFragmentManager.beginTransaction().apply {
                 replace(R.id.zoomContainer, ZoomClientFragment())
